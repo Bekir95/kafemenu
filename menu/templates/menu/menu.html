@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sulu Boya Fırça Dokuları</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .canvas {
+      position: relative;
+      width: 80vw;
+      height: 80vh;
+      background-color: white;
+      overflow: hidden;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .brush {
+      position: absolute;
+      opacity: 0;
+      transform: scale(0.3) rotate(0deg);
+      transition: opacity 1s ease, transform 2s ease;
+      pointer-events: none;
+    }
+
+    .brush.visible {
+      opacity: 0.7;
+      transform: scale(1) rotate(var(--rotation));
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas" id="canvas"></div>
+
+  
+
+  <script>
+    const canvas = document.getElementById("canvas");
+
+    // Fırça dokularının yolu
+    const brushImages = [
+      "{% static 'brushstrokes/1.svg' %}",
+      "{% static 'brushstrokes/2.svg' %}",
+      "{% static 'brushstrokes/3.svg' %}",
+      "{% static 'brushstrokes/4.svg' %}",
+      "{% static 'brushstrokes/5.svg' %}",
+      "{% static 'brushstrokes/6.svg' %}",
+      "{% static 'brushstrokes/7.svg' %}",
+    ];
+
+    // Rastgele renk üretme fonksiyonu
+    function getRandomColor() {
+      const hue = Math.floor(Math.random() * 360);
+      const saturation = Math.floor(Math.random() * 30) + 70; // %70-%100 arasında
+      const lightness = Math.floor(Math.random() * 40) + 40; // %40-%80 arasında
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
+    // Yeni fırça dokusu ekleme fonksiyonu
+    function addBrush() {
+      const brush = document.createElement("img");
+      brush.src = brushImages[Math.floor(Math.random() * brushImages.length)];
+      brush.className = "brush";
+
+      const size = Math.random() * 150 + 100; // 100–250px arasında
+      const top = Math.random() * (window.innerHeight - size);
+      const left = Math.random() * (window.innerWidth - size);
+      const rotation = Math.random() * 60 - 30 + "deg";
+
+      brush.style.top = `${top}px`;
+      brush.style.left = `${left}px`;
+      brush.style.width = `${size}px`;
+      brush.style.setProperty('--rotation', rotation);
+
+      // Fırçaya rastgele renk ekle
+      const color = getRandomColor();
+
+      // Görselin üzerine renk efekti eklemek için filter kullan
+      brush.style.filter = `hue-rotate(${Math.random() * 360}deg) saturate(1)`;
+
+      // Fırça dokusunu canvas'a ekle
+      canvas.appendChild(brush);
+
+      // Görünürlüğü animasyonla etkinleştir
+      setTimeout(() => {
+        brush.classList.add("visible");
+      }, 50);
+    }
+
+    // Sayfa yüklendikten sonra her 2 saniyede bir yeni fırça dokusu ekle
+    window.addEventListener('load', () => {
+      setInterval(addBrush, 2000); // 2 saniyede bir fırça dokusu ekle
+    });
+  </script>
+</body>
+</html>
+
+

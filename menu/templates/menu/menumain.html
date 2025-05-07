@@ -1,0 +1,453 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisan Cafe | Menü</title>
+    <style>
+        :root {
+            --primary-color: #7c677f; /* Koyu pastel mor */
+            --secondary-color: #566246; /* Koyu pastel yeşil */
+            --accent-color: #896a45; /* Koyu pastel amber */
+            --text-color: #d9d9d9; /* Açık gri metin */
+            --bg-color: #2a2a2a; /* Koyu gri arka plan */
+            --highlight-color: #8c5450; /* Koyu pastel gül */
+            --shadow-color: rgba(0, 0, 0, 0.5); /* Daha koyu gölgeler */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .canvas {
+            position: fixed; /* Sabit arka plan haline getir */
+            top: 0;
+            left: 0;
+            width: 100vw; /* Tam genişlik */
+            height: 100vh; /* Tam yükseklik */
+            background-color: var(--bg-color); /* Koyu arkaplan */
+            overflow: hidden;
+            z-index: -1; /* Arka plana gönder */
+        }
+
+        .menu-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative; /* Pozisyonu belirle */
+            z-index: 1; /* Kanvastan önde olsun */
+            background-color: rgba(42, 42, 42, 0.7); /* Yarı saydam arka plan */
+            border-radius: 1rem;
+            box-shadow: 0 0 20px var(--shadow-color);
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            position: relative;
+        }
+
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(120deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            opacity: 0.5;
+            border-radius: 1rem;
+            z-index: -1;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 2px;
+        }
+
+        .tagline {
+            font-style: italic;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .paint-stroke {
+            width: 200px;
+            height: 30px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .paint-stroke::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--highlight-color);
+            border-radius: 20px;
+            transform: skew(-10deg);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab {
+            padding: 0.8rem 1.5rem;
+            margin: 0 0.5rem;
+            cursor: pointer;
+            background-color: #333;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        .tab::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-color);
+            opacity: 0.3;
+            z-index: -1;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .tab:hover::before, .tab.active::before {
+            transform: translateY(0);
+        }
+
+        .tab.active {
+            background-color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .menu-content {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .menu-content.active {
+            display: grid;
+        }
+
+        .menu-item {
+            background: linear-gradient(135deg, #3a3a3a 0%, var(--secondary-color) 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px var(--shadow-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px var(--shadow-color);
+        }
+
+        .item-image {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-image::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+        }
+
+        .item-details {
+            padding: 1.5rem;
+        }
+
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .item-description {
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: var(--text-color);
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background-color: var(--accent-color);
+            border-radius: 20px;
+        }
+
+        .item-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.2rem 0.6rem;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem 0;
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .art-quote {
+            font-style: italic;
+            max-width: 600px;
+            margin: 0 auto 1rem auto;
+            line-height: 1.8;
+        }
+
+        .quote-author {
+            font-weight: bold;
+        }
+
+        .art-icon {
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .brush {
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.3) rotate(0deg);
+            transition: opacity 1s ease, transform 2s ease;
+            pointer-events: none;
+        }
+
+        .brush.visible {
+            opacity: 0.7;
+            transform: scale(1) rotate(var(--rotation));
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .menu-content {
+                grid-template-columns: 1fr;
+            }
+
+            .tab {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas artık menünün arka planı olarak yer alıyor -->
+    <div class="canvas" id="canvas"></div>
+    
+    <div class="menu-container">
+        <header>
+            <h1 class="logo">Sanat Cafe</h1>
+            <p class="tagline">Her fincanda bir sanat eseri</p>
+            <div class="paint-stroke"></div>
+        </header>
+
+        <div class="tabs">
+            {% for category in categories %}
+                {% if forloop.first %}
+                    <div class="tab active" data-category="{{ category }}">
+                        {% if category.logo2 %}
+                            <span class="art-icon">{{ category.logo2 }}</span>
+                        {% endif %}
+                        {{ category }}
+                    </div>
+                {% else %}
+                    <div class="tab " data-category="{{ category }}">
+                        {% if category.logo2 %}
+                            <span class="art-icon">{{ category.logo2 }}</span>
+                        {% endif %}
+                        {{ category }}
+                    </div>
+                {% endif %}
+            
+            {% endfor %}
+        </div>
+
+        
+        {% for category in categories %}
+            <div class="menu-content {% if forloop.first %} active {% endif %} " id="{{ category }}">
+                {% for item in category.items.all %}
+                    <div class="menu-item">
+                        {% if item.image and item.image.name %}
+                        <div class="item-image" style="background-image: url('{{ item.image.url }}');"></div>
+                        {% else %}
+                        <div class="item-image placeholder">Görsel yok</div>
+                        {% endif %}
+
+                        {% if item.tag %} <div class="item-tag">{{ item.tag }}</div>
+                        {% endif %}
+                        <div class="item-details">
+                            <h3 class="item-name">{{ item.name }}</h3>
+                            <p class="item-description">{{ item.description }}.</p>
+                            <span class="item-price">{{ item.price }} ₺</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>  
+            
+        {% endfor %}
+        
+        
+        
+        <footer>
+            <p class="art-quote">"Sanat, kahveyle yıkanmış bir ruhun dünyaya bıraktığı izdir."</p>
+            <p class="quote-author">— Sanat Cafe</p>
+            <p>© 2025 Sanat Cafe | Tüm Hakları Saklıdır</p>
+        </footer>
+    </div>
+
+    <script>
+        // Sayfa yüklendiğinde çalışacak kodlar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab değiştirme
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Aktif tab'ı değiştir
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // İlgili içeriği göster
+                    const category = tab.getAttribute('data-category');
+                    document.querySelectorAll('.menu-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(category).classList.add('active');
+                });
+            });
+        });
+
+        // Fırça dokularının yolu
+        const brushImages = [
+            "{% static 'brushstrokes/1.svg' %}",
+            "{% static 'brushstrokes/2.svg' %}",
+            "{% static 'brushstrokes/3.svg' %}",
+            "{% static 'brushstrokes/4.svg' %}",
+            "{% static 'brushstrokes/5.svg' %}",
+            "{% static 'brushstrokes/6.svg' %}",
+            "{% static 'brushstrokes/7.svg' %}",
+        ];
+
+        // Rastgele renk üretme fonksiyonu
+        function getRandomColor() {
+            const hue = Math.floor(Math.random() * 360);
+            const saturation = Math.floor(Math.random() * 30) + 70; // %70-%100 arasında
+            const lightness = Math.floor(Math.random() * 40) + 40; // %40-%80 arasında
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+
+        // Yeni fırça dokusu ekleme fonksiyonu
+        function addBrush() {
+            const brush = document.createElement("img");
+            brush.src = brushImages[Math.floor(Math.random() * brushImages.length)];
+            brush.className = "brush";
+
+            const size = Math.random() * 150 + 100; // 100–250px arasında
+            const top = Math.random() * (window.innerHeight - size);
+            const left = Math.random() * (window.innerWidth - size);
+            const rotation = Math.random() * 60 - 30 + "deg";
+
+            brush.style.top = `${top}px`;
+            brush.style.left = `${left}px`;
+            brush.style.width = `${size}px`;
+            brush.style.setProperty('--rotation', rotation);
+
+            // Fırçaya rastgele renk ekle
+            const color = getRandomColor();
+
+            // Görselin üzerine renk efekti eklemek için filter kullan
+            brush.style.filter = `hue-rotate(${Math.random() * 360}deg) saturate(1)`;
+
+            // Fırça dokusunu canvas'a ekle
+            canvas.appendChild(brush);
+
+            // Görünürlüğü animasyonla etkinleştir
+            setTimeout(() => {
+                brush.classList.add("visible");
+            }, 50);
+        }
+
+        // Sayfa yüklendikten sonra her 2 saniyede bir yeni fırça dokusu ekle
+        window.addEventListener('load', () => {
+            setInterval(addBrush, 2000); // 2 saniyede bir fırça dokusu ekle
+            
+            // İlk olarak birkaç fırça ekleyelim ki sayfa yüklendiğinde boş görünmesin
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    addBrush();
+                }, i * 200);
+            }
+        });
+    </script>
+</body>
+</html>
